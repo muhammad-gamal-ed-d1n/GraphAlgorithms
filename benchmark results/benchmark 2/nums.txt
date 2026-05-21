@@ -1,0 +1,16 @@
+==== Sparse ====
+Mean:  5.20
+Median:  4.97
+Standard Deviation:  1.11
+==== Dense ====
+Mean:  26.14
+Median:  22.95
+Standard Deviation:  7.57
+==== Complete ====
+Mean:  51.05
+Median:  48.46
+Standard Deviation:  14.66
+==== DAG ====
+Mean:  0.20
+Median:  0.14
+Standard Deviation:  0.13

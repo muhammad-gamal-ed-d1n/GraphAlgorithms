@@ -1,0 +1,11 @@
+Algorithm,Distribution,Run,Time
+Dijkstra,DAG,1,13417000
+DAGShortestTime,DAG,1,6018700
+Dijkstra,DAG,2,1039400
+DAGShortestTime,DAG,2,1971400
+Dijkstra,DAG,3,2326600
+DAGShortestTime,DAG,3,1650700
+Dijkstra,DAG,4,1118100
+DAGShortestTime,DAG,4,1381000
+Dijkstra,DAG,5,1816500
+DAGShortestTime,DAG,5,1690400

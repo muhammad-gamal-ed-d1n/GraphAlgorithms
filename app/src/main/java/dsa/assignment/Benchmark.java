@@ -10,6 +10,8 @@ import dsa.assignment.service.GraphGenerator;
 
 public class Benchmark {
     public static void main(String[] args) {
+        // firstBenchmark();
+        // secondBenchmark();
         thirdBenchmark();
     }
 
@@ -26,7 +28,7 @@ public class Benchmark {
             complete = generator.generateCompleteGraph(1000);
 
             // MST Benchmarks
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 15; i++) {
                 Long time;
 
                 time = benchmark(()->sparse.primMST());
@@ -41,7 +43,7 @@ public class Benchmark {
             }
 
 
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 15; i++) {
                 Long time;
 
                 time = benchmark(()->dense.primMST());
@@ -54,7 +56,7 @@ public class Benchmark {
                 writer.flush();
             }
 
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 15; i++) {
                 Long time;
 
                 time = benchmark(()->complete.primMST());
@@ -91,7 +93,7 @@ public class Benchmark {
             dag = generator.generateDAG(1000);
 
 
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 15; i++) {
                 Long time;
                 int source = rand.nextInt(1000);
 
@@ -100,7 +102,7 @@ public class Benchmark {
                 writer.flush();
             }
 
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 15; i++) {
                 Long time;
                 int source = rand.nextInt(1000);
 
@@ -108,7 +110,7 @@ public class Benchmark {
                 CsvWriter.WriteRow(writer, "Dijkstra", "Dense", i + 1, time);
                 writer.flush();
             }
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 15; i++) {
                 Long time;
                 int source = rand.nextInt(1000);
 
@@ -117,7 +119,7 @@ public class Benchmark {
                 writer.flush();
             }
 
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 15; i++) {
                 Long time;
                 int source = rand.nextInt(1000);
 
@@ -145,7 +147,7 @@ public class Benchmark {
             GraphGenerator generator = new GraphGenerator();
             Graph dag = generator.generateDAG(1000);
 
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 15; i++) {
                 Long time;
                 int source = rand.nextInt(1000);
 
@@ -154,7 +156,7 @@ public class Benchmark {
                 writer.flush();
 
                 time = benchmark(() -> dag.dagShortestPath(source));
-                CsvWriter.WriteRow(writer, "DAGShortestTime", "DAG", i + 1, time);
+                CsvWriter.WriteRow(writer, "DAGShortestPath", "DAG", i + 1, time);
                 writer.flush();
             }
             writer.close();

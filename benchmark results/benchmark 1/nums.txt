@@ -1,0 +1,24 @@
+===== Prim's   Sparse =====
+Prim's  Mean Time:  125.80
+Prim's  Median:  120.96
+Prim's  Standard Deviation:  27.25
+===== Kruskal   Sparse =====
+Kruskal  Mean Time:  80.26
+Kruskal  Median:  73.03
+Kruskal  Standard Deviation:  21.74
+===== Prim's   Dense =====
+Prim's  Mean Time:  2370.27
+Prim's  Median:  2514.38
+Prim's  Standard Deviation:  469.81
+===== Kruskal   Dense =====
+Kruskal  Mean Time:  485.10
+Kruskal  Median:  500.07
+Kruskal  Standard Deviation:  118.80
+===== Prim's   Complete =====
+Prim's  Mean Time:  9852.87
+Prim's  Median:  9675.73
+Prim's  Standard Deviation:  1481.32
+===== Kruskal   Complete =====
+Kruskal  Mean Time:  2379.71
+Kruskal  Median:  2044.10
+Kruskal  Standard Deviation:  707.43

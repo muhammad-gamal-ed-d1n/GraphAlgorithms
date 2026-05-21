@@ -1,8 +1,10 @@
 package dsa.assignment.graph;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -18,6 +20,7 @@ public class Graph {
     private Set<Integer> vertices;
     private Map<Integer, List<Edge>> adj;
     private Set<Edge> edges;
+    Deque<Integer> cachedTopoOrder;
 
     public Graph() {
         this.vertices = new HashSet<>();
@@ -37,6 +40,7 @@ public class Graph {
 
         edges.add(new Edge(u, v, weight));
         edges.add(new Edge(v, u, weight));
+        cachedTopoOrder = null;
     }
 
     public void addDirectedEdge(int u, int v, int weight) {
@@ -49,6 +53,7 @@ public class Graph {
         adj.get(u).add(new Edge(u, v, weight));
 
         edges.add(new Edge(u, v, weight));
+        cachedTopoOrder = null;
     }
 
 
@@ -155,12 +160,20 @@ public class Graph {
     public int[] dagShortestPath(int source) {
         if (vertices.size() <= 1) return new int[]{0};
 
-        Stack<Integer> stack = topologicalSort(source);
+        Deque<Integer> stack;
+
+        if (cachedTopoOrder == null) {
+            stack = topologicalSort(source);
+            cachedTopoOrder = new ArrayDeque<>(stack);
+        } else {
+            stack = new ArrayDeque<>(cachedTopoOrder);
+        }
+
         int[] result = new int[vertices.size()];
         Arrays.fill(result, Integer.MAX_VALUE);
         result[source] = 0;
 
-        while(!stack.empty()) {
+        while(!(stack.size() == 0)) {
             int u = stack.pop();
 
             if (result[u] == Integer.MAX_VALUE) continue;
@@ -178,12 +191,12 @@ public class Graph {
         return result;
     }
 
-    private Stack<Integer> topologicalSort(int source) {
-        Stack<Integer> stack = new Stack<>();
-        List<Integer> state = new ArrayList<>(Collections.nCopies(vertices.size(), 0));
-    
+    private Deque<Integer> topologicalSort(int source) {
+        Deque<Integer> stack = new ArrayDeque<>();
+        int[] state = new int[vertices.size()];
+
         for (Integer v : vertices) {
-            if (state.get(v) == 0) {
+            if (state[v] == 0) {
                 dfs(v, state, stack);
             }
         }
@@ -191,15 +204,15 @@ public class Graph {
         return stack;
     }
 
-    private void dfs(int u, List<Integer> state, Stack<Integer> stack) {
-        state.set(u, 1);
+    private void dfs(int u, int[] state, Deque<Integer> stack) {
+        state[u] = 1;
         for (Edge e : adj.get(u)) {
-            if (state.get(e.getV()) == 1){System.out.println("ERRORRR");}; // TODO: throw error
-            if (state.get(e.getV()) == 0) {
+            if (state[e.getV()] == 1){System.out.println("ERRORRR");}; // TODO: throw error
+            if (state[e.getV()] == 0) {
                 dfs(e.getV(), state, stack);
             }
         }
-        state.set(u, 2);
+        state[u] = 2;
         stack.push(u);
     }
 
