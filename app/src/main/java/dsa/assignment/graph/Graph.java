@@ -15,67 +15,88 @@ import dsa.assignment.model.Edge;
 import dsa.assignment.model.Node;
 
 public class Graph {
-    private Set<Edge> edges;
     private Set<Integer> vertices;
+    private Map<Integer, List<Edge>> adj;
+    private Set<Edge> edges;
 
     public Graph() {
-        this.edges = new HashSet<>();
         this.vertices = new HashSet<>();
+        this.adj = new HashMap<>();
+        this.edges = new HashSet<>();
     }
 
     public void addEdge(int u, int v, int weight) {
-        Edge edge1 = new Edge(u, v, weight);
-        Edge edge2 = new Edge(v, u, weight);
-        edges.add(edge1);
-        edges.add(edge2);
-        vertices.add(u);
-        vertices.add(v);
+        if(!vertices.contains(u)) vertices.add(u);
+        if(!vertices.contains(v)) vertices.add(v);
+
+        adj.computeIfAbsent(u, k -> new ArrayList<>());
+        adj.computeIfAbsent(v, k -> new ArrayList<>());
+
+        adj.get(u).add(new Edge(u, v, weight));
+        adj.get(v).add(new Edge(v, u, weight));
+
+        edges.add(new Edge(u, v, weight));
+        edges.add(new Edge(v, u, weight));
     }
 
     public void addDirectedEdge(int u, int v, int weight) {
-        Edge edge = new Edge(u, v, weight);
-        edges.add(edge);
-        vertices.add(u);
-        vertices.add(v);
+        if(!vertices.contains(u)) vertices.add(u);
+        if(!vertices.contains(v)) vertices.add(v);
+
+        adj.computeIfAbsent(u, k -> new ArrayList<>());
+        adj.computeIfAbsent(v, k -> new ArrayList<>());
+
+        adj.get(u).add(new Edge(u, v, weight));
+
+        edges.add(new Edge(u, v, weight));
     }
 
+
     public List<Edge> primMST() {
+
+        if (vertices.size() <= 1) return new ArrayList<>();
+
         // Initialize keys map, initialize Q heap
         Map<Integer, Integer> keys = initKeys();
-        PriorityQueue<Node> pq = getHeap();
-        Map<Integer, List<Integer>> adj = getAdjancencyList();
+        PriorityQueue<Node> pq = new PriorityQueue<>((a, b) -> Integer.compare(a.getWeight(), b.getWeight()));
+        pq.add(new Node(0, 0));
         Map<Integer, Integer> parent = getParentList();
+        Set<Integer> visited = new HashSet<>();
 
         while (!pq.isEmpty()) {
             Node u = pq.poll();
+            visited.add(u.getVertex());
 
-            for (Integer v : adj.get(u.getVertex())) {
-                Integer w = getWeight(u.getVertex(), v);
-                if (pq.contains(new Node(v, keys.get(v))) && keys.get(v) > w) {
+            // skip duplicates
+            if (u.getWeight() > keys.get(u.getVertex())) continue;
+
+            for (Edge e : adj.get(u.getVertex())) {
+                Integer w = e.getWeight();
+                if (!visited.contains(e.getV()) && keys.get(e.getV()) > w) {
                     // update pq
-                    pq.remove(new Node(v, keys.get(v)));
-                    pq.add(new Node(v, w));
+                    pq.add(new Node(e.getV(), w));
                     // update keys map
-                    keys.put(v, w);
+                    keys.put(e.getV(), w);
                     // update parent map
-                    parent.put(v, u.getVertex());
+                    parent.put(e.getV(), u.getVertex());
                 }
             }
         }
 
         List<Edge> result = new ArrayList<>();
-        List<Integer> vertices = getVertices();
         for (Integer v: vertices) {
             if (parent.get(v) != null) {
                 result.add(getEdge(parent.get(v), v));
             }
         }
 
-
         return result;
     }
 
     public List<Edge> kruskalMST() {
+
+        if (vertices.size() <= 1) return new ArrayList<>();
+
         PriorityQueue<Edge> pq = getKruskalEdges();
         // create disjoint sets
         List<Set<Integer>> sets = getDisjointSets();
@@ -96,12 +117,15 @@ public class Graph {
     }
 
     public int[] dijkstra(int source) {
-        PriorityQueue<Node> pq = getPriorityQueueDijkstra(source);
-        Map<Integer, List<Integer>> adj = getAdjancencyList();
+
+        if (vertices.size() <= 1) return new int[]{0};
+
+        PriorityQueue<Node> pq = new PriorityQueue<>((a, b) -> Integer.compare(a.getWeight(), b.getWeight()));
+        pq.add(new Node(source, 0));
         Map<Integer, Integer> result = new HashMap<>();
         
         //populate result
-        for (Integer v : getVertices()) {
+        for (Integer v : vertices) {
             result.put(v, Integer.MAX_VALUE);
         }
         result.put(source, 0);
@@ -109,14 +133,18 @@ public class Graph {
         while (!pq.isEmpty()) {
             Node u = pq.poll();
 
-            for (Integer v : adj.get(u.getVertex())) {
-                Integer w = getWeight(u.getVertex(), v);
-                if (u.getWeight() + w < result.get(v)) {
+            // skip duplicates
+            if (u.getWeight() > result.get(u.getVertex())) continue;
+
+            for (Edge e : adj.get(u.getVertex())) {
+                Integer w = e.getWeight();
+                Integer newDist = result.get(e.getU()) + w;
+
+                if (newDist < result.get(e.getV())) {
                     // update priority queue
-                    pq.remove(new Node(v, result.get(v)));
-                    pq.add(new Node(v, u.getWeight() + w));
+                    pq.add(new Node(e.getV(), newDist));
                     // update result
-                    result.put(v, u.getWeight() + w);
+                    result.put(e.getV(), newDist);
                 }
             }
         }
@@ -125,10 +153,11 @@ public class Graph {
     }
 
     public int[] dagShortestPath(int source) {
+        if (vertices.size() <= 1) return new int[]{0};
+
         Stack<Integer> stack = topologicalSort(source);
-        int[] result = new int[getVertices().size()];
+        int[] result = new int[vertices.size()];
         Arrays.fill(result, Integer.MAX_VALUE);
-        Map<Integer, List<Integer>> adj = getAdjancencyList();
         result[source] = 0;
 
         while(!stack.empty()) {
@@ -136,11 +165,11 @@ public class Graph {
 
             if (result[u] == Integer.MAX_VALUE) continue;
 
-            for (Integer v : adj.get(u)) {
-                Integer w = getWeight(u, v);
+            for (Edge e : adj.get(u)) {
+                Integer w = e.getWeight();
 
-                if (result[v] < w + result[u]) {
-                    result[v] = w + result[u];
+                if (result[e.getV()] > w + result[u]) {
+                    result[e.getV()] = w + result[u];
                 }
             }
         }
@@ -151,7 +180,6 @@ public class Graph {
 
     private Stack<Integer> topologicalSort(int source) {
         Stack<Integer> stack = new Stack<>();
-        List<Integer> vertices = getVertices();
         List<Integer> state = new ArrayList<>(Collections.nCopies(vertices.size(), 0));
     
         for (Integer v : vertices) {
@@ -163,23 +191,21 @@ public class Graph {
         return stack;
     }
 
-    private void dfs(int v, List<Integer> state, Stack<Integer> stack) {
-        Map<Integer, List<Integer>> adj = getAdjancencyList();
-
-        state.set(v, 1);
-        for (Integer u : adj.get(v)) {
-            if (state.get(u) == 1); // TODO: throw error
-            if (state.get(u) == 0) {
-                dfs(u, state, stack);
+    private void dfs(int u, List<Integer> state, Stack<Integer> stack) {
+        state.set(u, 1);
+        for (Edge e : adj.get(u)) {
+            if (state.get(e.getV()) == 1){System.out.println("ERRORRR");}; // TODO: throw error
+            if (state.get(e.getV()) == 0) {
+                dfs(e.getV(), state, stack);
             }
         }
-        state.set(v, 2);
-        stack.push(v);
+        state.set(u, 2);
+        stack.push(u);
     }
 
     public PriorityQueue<Node> getPriorityQueueDijkstra(int source) {
         PriorityQueue<Node> pq = new PriorityQueue<>((a, b) -> Integer.compare(a.getWeight(), b.getWeight()));
-        List<Integer> vertices = getVertices();
+
         for (Integer v : vertices) {
             if (v == source) continue;
             pq.add(new Node(v, Integer.MAX_VALUE));
@@ -204,7 +230,6 @@ public class Graph {
 
     private List<Set<Integer>> getDisjointSets() {
         List<Set<Integer>> sets = new ArrayList<Set<Integer>>();
-        List<Integer> vertices = getVertices();
 
         for (int v : vertices) {
             sets.add(new HashSet<Integer>(Set.of(v)));
@@ -230,15 +255,7 @@ public class Graph {
         return null;
     }
 
-    private Integer getWeight(int u, int v) {
-        for (Edge edge : edges) {
-            if (edge.getU() == u && edge.getV() == v) return edge.getWeight();
-        }
-        return Integer.MAX_VALUE;
-    }
-
     private Map<Integer, Integer> getParentList() {
-        List<Integer> vertices = getVertices();
         Map<Integer, Integer> parent = new HashMap<>();
         for (Integer v : vertices) {
             parent.put(v, null);
@@ -246,50 +263,12 @@ public class Graph {
         return parent;
     }
 
-    private Map<Integer, List<Integer>> getAdjancencyList() {
-        List<Integer> vertices = getVertices();
-        Map<Integer, List<Integer>> adj = new HashMap<>();
-        for (int v : vertices) {
-            adj.put(v, new ArrayList<Integer>());
-        }
-        for (Edge edge : edges) {
-            adj.get(edge.getU()).add(edge.getV());
-        }
-        return adj;
-    }
-
-    private PriorityQueue<Node> getHeap() {
-        PriorityQueue<Node> pq = new PriorityQueue<>((a, b) -> Integer.compare(a.getWeight(), b.getWeight()));
-        pq.addAll(getNodes());
-        return pq;
-    }
-
-    private List<Node> getNodes() {
-        List<Node> nodes = new ArrayList<>();
-        List<Integer> vertices = getVertices();
-        for (Integer v : vertices) {
-            nodes.add(new Node(v, Integer.MAX_VALUE));
-        }
-        nodes.get(0).setWeight(0);
-        return nodes;
-    }
-
     private Map<Integer, Integer> initKeys() {
-        List<Integer> vertices = getVertices();
         Map<Integer, Integer> keys = new HashMap<>();
         for (int v : vertices) {
             keys.put(v, Integer.MAX_VALUE);
         }
-        keys.put(vertices.get(0), 0);
+        keys.put(0, 0);
         return keys;
-    }
-
-    private List<Integer> getVertices() {
-        Set<Integer> vertices = new HashSet<Integer>();
-        for (Edge edge : this.edges) {
-            vertices.add(edge.getU());
-            vertices.add(edge.getV());
-        }
-        return new ArrayList<>(vertices);
     }
 }

@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class Edge {
-    int v, u;
+    int u, v;
     int weight;
 
     @Override
@@ -25,5 +25,10 @@ public class Edge {
     @Override
     public int hashCode() {
         return Objects.hash(v, u);
+    }
+
+    @Override
+    public String toString() {
+        return "{U: " + u + ", V: " + v + ", Weight: " + weight + "}";
     }
 }
