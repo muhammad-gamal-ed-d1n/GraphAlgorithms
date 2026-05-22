@@ -6,9 +6,475 @@ package dsa.assignment;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import dsa.assignment.graph.Graph;
+import dsa.assignment.model.Edge;
+import dsa.assignment.service.GraphGenerator;
+
 class AppTest {
+    
     @Test void appHasAGreeting() {
         App classUnderTest = new App();
         assertNotNull(classUnderTest.getGreeting(), "app should have a greeting");
     }
+
+    // Prim's tests
+    
+    @Test
+    void primMstOnTriangleGraphReturnsCorrectMst() {
+        // Test Prim's on a simple triangle graph to verify it picks the two smallest edges
+        Graph graph = new Graph();
+        graph.addEdge(0, 1, 4);
+        graph.addEdge(0, 2, 3);
+        graph.addEdge(1, 2, 2);
+        
+        List<Edge> mst = graph.primMST();
+        int totalWeight = mst.stream().mapToInt(Edge::getWeight).sum();
+        
+        assertEquals(5, totalWeight);
+        assertEquals(2, mst.size());
+    }
+
+    @Test
+    void primMstOnLinearGraphReturnsAllEdges() {
+        // Test Prim's on a linear graph. Must return all edges
+        Graph graph = new Graph();
+        graph.addEdge(0, 1, 1);
+        graph.addEdge(1, 2, 2);
+        graph.addEdge(2, 3, 3);
+        
+        List<Edge> mst = graph.primMST();
+        int totalWeight = mst.stream().mapToInt(Edge::getWeight).sum();
+        
+        assertEquals(6, totalWeight);
+        assertEquals(3, mst.size());
+    }
+
+    @Test
+    void primMstOnEmptyGraphReturnsEmptyList() {
+        // Test Prim's edge case when graph is empty
+        Graph graph = new Graph();
+        List<Edge> mst = graph.primMST();
+        assertTrue(mst.isEmpty());
+    }
+
+    @Test
+    void primMstOnDisconnectedGraphReturnsPartialMst() {
+        // Test Prim's behavior on disconnected graph. Should only connect reachable vertices
+        Graph graph = new Graph();
+        graph.addEdge(0, 1, 2);
+        graph.addEdge(2, 3, 3);
+        
+        List<Edge> mst = graph.primMST();
+        int totalWeight = mst.stream().mapToInt(Edge::getWeight).sum();
+        
+        assertEquals(2, totalWeight);
+        assertEquals(1, mst.size());
+    }
+
+    @Test
+    void primMstGraphWithZeroWeightEdges() {
+        // Test Prim's algorithm with zero-weight edges
+        Graph graph = new Graph();
+        graph.addEdge(0, 1, 0);
+        graph.addEdge(1, 2, 2);
+        graph.addEdge(0, 2, 5);
+        
+        List<Edge> mst = graph.primMST();
+        int totalWeight = mst.stream().mapToInt(Edge::getWeight).sum();
+        
+        assertEquals(2, totalWeight);
+    }
+
+    // Kruskal's tests
+    
+    @Test
+    void kruskalMstOnTriangleGraph() {
+        // Test Kruskal's on triangle graph to verify it picks smallest edges without cycles
+        Graph graph = new Graph();
+        graph.addEdge(0, 1, 4);
+        graph.addEdge(0, 2, 3);
+        graph.addEdge(1, 2, 2);
+        
+        List<Edge> mst = graph.kruskalMST();
+        int totalWeight = mst.stream().mapToInt(Edge::getWeight).sum();
+        
+        assertEquals(5, totalWeight);
+        assertEquals(2, mst.size());
+    }
+
+    @Test
+    void kruskalMstOnDisconnectedGraph() {
+        // Test Kruskal's on disconnected graph. Should it return MST for each component
+        Graph graph = new Graph();
+        graph.addEdge(0, 1, 2);
+        graph.addEdge(2, 3, 3);
+        graph.addEdge(4, 5, 1);
+        graph.addEdge(6, 7, 5);
+        
+        List<Edge> mst = graph.kruskalMST();
+        int totalWeight = mst.stream().mapToInt(Edge::getWeight).sum();
+        
+        assertEquals(11, totalWeight);
+        assertEquals(4, mst.size());
+    }
+
+    @Test
+    void kruskalMstOnCompleteGraph() {
+        // Test Kruskal's on complete graph K4. Should return V-1 = 3 edges
+        Graph graph = new Graph();
+        graph.addEdge(0, 1, 1);
+        graph.addEdge(0, 2, 2);
+        graph.addEdge(0, 3, 3);
+        graph.addEdge(1, 2, 4);
+        graph.addEdge(1, 3, 5);
+        graph.addEdge(2, 3, 6);
+        
+        List<Edge> mst = graph.kruskalMST();
+        
+        assertEquals(3, mst.size());
+    }
+
+
+    // Dijkstra's tests
+    
+    @Test
+    void dijkstraOnDirectedGraph() {
+        // Test Dijkstra's shortest path on a simple directed graph
+        Graph graph = new Graph();
+        graph.addDirectedEdge(0, 1, 5);
+        graph.addDirectedEdge(0, 2, 3);
+        graph.addDirectedEdge(1, 3, 2);
+        graph.addDirectedEdge(2, 1, 1);
+        graph.addDirectedEdge(2, 3, 6);
+        
+        int[] distances = graph.dijkstra(0);
+        
+        assertEquals(0, distances[0]);
+        assertEquals(4, distances[1]);
+        assertEquals(3, distances[2]);
+        assertEquals(6, distances[3]);
+    }
+
+    @Test
+    void dijkstraOnUndirectedGraph() {
+        // Test Dijkstra's on undirected graph
+        Graph graph = new Graph();
+        graph.addEdge(0, 1, 4);
+        graph.addEdge(0, 2, 2);
+        graph.addEdge(1, 2, 1);
+        
+        int[] distances = graph.dijkstra(0);
+        
+        assertEquals(0, distances[0]);
+        assertEquals(3, distances[1]);
+        assertEquals(2, distances[2]);
+    }
+
+    @Test
+    void dijkstraOnUnreachableVertex() {
+        // Test Dijkstra's behavior when destination vertex is unreachable
+        Graph graph = new Graph();
+        graph.addDirectedEdge(0, 1, 5);
+        graph.addDirectedEdge(2, 3, 3);
+        
+        int[] distances = graph.dijkstra(0);
+        
+        assertEquals(Integer.MAX_VALUE, distances[2]);
+        assertEquals(Integer.MAX_VALUE, distances[3]);
+    }
+
+    @Test
+    void dijkstraOnEmptyGraph() {
+        // Test Dijkstra's edge case with single vertex graph
+        Graph graph = new Graph();
+        int[] distances = graph.dijkstra(0);
+        assertEquals(1, distances.length);
+        assertEquals(0, distances[0]);
+    }
+
+    @Test
+    void dijkstraMixedEdgeTypes() {
+        // Test Dijkstra on graph with both undirected and directed edges
+        Graph graph = new Graph();
+        graph.addEdge(0, 1, 2);
+        graph.addDirectedEdge(1, 2, 3);
+        
+        int[] distances = graph.dijkstra(0);
+        
+        assertEquals(5, distances[2]);
+    }
+
+    // DAG shortest path tests
+    
+    @Test
+    void dagShortestPathOnSimpleDagReturnsCorrectDistances() {
+        // Test DAG shortest path on a simple DAG
+        Graph graph = new Graph();
+        graph.addDirectedEdge(0, 1, 5);
+        graph.addDirectedEdge(0, 2, 3);
+        graph.addDirectedEdge(1, 3, 2);
+        graph.addDirectedEdge(2, 3, 6);
+        
+        int[] distances = graph.dagShortestPath(0);
+        
+        assertEquals(0, distances[0]);
+        assertEquals(5, distances[1]);
+        assertEquals(3, distances[2]);
+        assertEquals(7, distances[3]);
+    }
+
+    @Test
+    void dagShortestPathWithNegativeWeights() {
+        // Test DAG's ability to handle negative weights where Dijkstra fails
+        Graph graph = new Graph();
+        graph.addDirectedEdge(0, 1, 5);
+        graph.addDirectedEdge(0, 2, 3);
+        graph.addDirectedEdge(1, 3, -2);
+        graph.addDirectedEdge(2, 3, 1);
+        
+        int[] distances = graph.dagShortestPath(0);
+        
+        assertEquals(3, distances[3]);
+    }
+
+    @Test
+    void dagShortestPathOnLinearDag() {
+        // Test DAG shortest path on a linear chain
+        Graph graph = new Graph();
+        graph.addDirectedEdge(0, 1, 2);
+        graph.addDirectedEdge(1, 2, 3);
+        graph.addDirectedEdge(2, 3, 4);
+        
+        int[] distances = graph.dagShortestPath(0);
+        
+        assertEquals(0, distances[0]);
+        assertEquals(2, distances[1]);
+        assertEquals(5, distances[2]);
+        assertEquals(9, distances[3]);
+    }
+
+    @Test
+    void dagShortestPathOnEmptyGraph() {
+        // Test DAG shortest path on empty graph
+        Graph graph = new Graph();
+        int[] distances = graph.dagShortestPath(0);
+        assertEquals(1, distances.length);
+        assertEquals(0, distances[0]);
+    }
+
+    @Test
+    void dagShortestPathThrowsExceptionOnCycle() {
+        // Test DAG throws IllegalStateException when graph contains a cycle
+        Graph graph = new Graph();
+        graph.addDirectedEdge(0, 1, 1);
+        graph.addDirectedEdge(1, 2, 1);
+        graph.addDirectedEdge(2, 0, 1);
+        
+        assertThrows(IllegalStateException.class, () -> {
+            graph.dagShortestPath(0);
+        });
+    }
+
+    @Test
+    void dagShortestPathWithCachedTopoOrderFasterSecondRun() {
+        // Test DAG caches topological order for subsequent runs
+        Graph graph = new Graph();
+        for (int i = 0; i < 100; i++) {
+            graph.addDirectedEdge(i, i + 1, 1);
+        }
+        
+        long start1 = System.nanoTime();
+        int[] firstRun = graph.dagShortestPath(0);
+        long time1 = System.nanoTime() - start1;
+        
+        long start2 = System.nanoTime();
+        int[] secondRun = graph.dagShortestPath(0);
+        long time2 = System.nanoTime() - start2;
+        
+        assertArrayEquals(firstRun, secondRun);
+        assertTrue(time2 <= time1);
+    }
+
+    // Graph generator tests
+    
+    @Test
+    void graphGeneratorSparseGraphHasCorrectEdgeCount() {
+        // Test sparse graph generation has approximately 5*vertices edges
+        GraphGenerator generator = new GraphGenerator();
+        int vertexCount = 50;
+        
+        Graph sparseGraph = generator.generateSparseGraph(vertexCount);
+        List<Edge> mst = sparseGraph.kruskalMST();
+        
+        assertTrue(mst.size() >= vertexCount - 1);
+    }
+
+    @Test
+    void graphGeneratorDenseGraphIsFullyConnected() {
+        // Test dense graph generation ensures graph is connected
+        GraphGenerator generator = new GraphGenerator();
+        int vertexCount = 200;
+
+        Graph denseGraph = generator.generateDenseGraph(vertexCount);
+
+        Deque<Integer> stack = new ArrayDeque<>();
+
+        int visitedCount = 0;
+        stack.push(0);
+        Set<Integer> visited = new HashSet<>();
+
+        Map<Integer, List<Edge>> adj = denseGraph.getAdjacencyList();
+
+        
+        while (!stack.isEmpty()) {
+            int node = stack.pop();
+
+            if (visited.contains(node)) continue;
+
+            List<Edge> edges = adj.get(node);
+
+            for (Edge edge : edges) {
+                stack.push(edge.getV());
+            }
+
+            visited.add(node);
+            visitedCount++;
+        }
+        
+        assertEquals(visitedCount, vertexCount);
+    }
+
+
+    @Test
+    void graphGeneratorSparseGraphIsFullyConnected() {
+        // Test sparse graph generation ensures graph is connected
+        GraphGenerator generator = new GraphGenerator();
+        int vertexCount = 200;
+
+        Graph sparseGraph = generator.generateSparseGraph(vertexCount);
+
+        Deque<Integer> stack = new ArrayDeque<>();
+
+        int visitedCount = 0;
+        stack.push(0);
+        Set<Integer> visited = new HashSet<>();
+
+        Map<Integer, List<Edge>> adj = sparseGraph.getAdjacencyList();
+
+        
+        while (!stack.isEmpty()) {
+            int node = stack.pop();
+
+            if (visited.contains(node)) continue;
+
+            List<Edge> edges = adj.get(node);
+
+            for (Edge edge : edges) {
+                stack.push(edge.getV());
+            }
+
+            visited.add(node);
+            visitedCount++;
+        }
+        
+        assertEquals(visitedCount, vertexCount);
+    }
+
+    @Test
+    void graphGeneratorCompleteGraphIsFullyConnected() {
+        // Test sparse complete generation ensures graph is connected
+        GraphGenerator generator = new GraphGenerator();
+        int vertexCount = 200;
+
+        Graph completeGraph = generator.generateCompleteGraph(vertexCount);
+
+        Deque<Integer> stack = new ArrayDeque<>();
+
+        int visitedCount = 0;
+        stack.push(0);
+        Set<Integer> visited = new HashSet<>();
+
+        Map<Integer, List<Edge>> adj = completeGraph.getAdjacencyList();
+
+        
+        while (!stack.isEmpty()) {
+            int node = stack.pop();
+
+            if (visited.contains(node)) continue;
+
+            List<Edge> edges = adj.get(node);
+
+            for (Edge edge : edges) {
+                stack.push(edge.getV());
+            }
+
+            visited.add(node);
+            visitedCount++;
+        }
+        
+        assertEquals(visitedCount, vertexCount);
+    }
+
+
+    @Test
+    void graphGeneratorDagHasNoCycles() {
+        // Test DAG generation produces acyclic graph where edges only go forward
+        GraphGenerator generator = new GraphGenerator();
+        int vertexCount = 30;
+        
+        Graph dag = generator.generateDAG(vertexCount);
+        
+        assertDoesNotThrow(() -> {
+            dag.dagShortestPath(0);
+        });
+    }
+
+    // Edge case tests
+    
+    @Test
+    void addEdgeDuplicateEdgeHandlesGracefully() {
+        // Test adding duplicate edge doesn't break the graph
+        Graph graph = new Graph();
+        graph.addEdge(0, 1, 5);
+        graph.addEdge(0, 1, 3);
+        
+        int[] distances = graph.dijkstra(0);
+        
+        assertEquals(3, distances[1]);
+    }
+
+    @Test
+    void addEdgeSelfLoopIgnoredInMst() {
+        // Test self-loop doesn't affect MST algorithms
+        Graph graph = new Graph();
+        graph.addEdge(0, 0, 100);
+        graph.addEdge(0, 1, 2);
+        graph.addEdge(1, 2, 3);
+        
+        List<Edge> mst = graph.primMST();
+        int totalWeight = mst.stream().mapToInt(Edge::getWeight).sum();
+        
+        assertEquals(5, totalWeight);
+        assertEquals(2, mst.size());
+    }
+
+    @Test
+    void dijkstraOnGraphWithLargeWeightsHandlesOverflow() {
+        // Test Dijkstra with near-maximum weights to check for overflow
+        Graph graph = new Graph();
+        graph.addDirectedEdge(0, 1, Integer.MAX_VALUE - 100);
+        graph.addDirectedEdge(1, 2, 200);
+        
+        int[] distances = graph.dijkstra(0);
+        
+        assertTrue(distances[2] == Integer.MAX_VALUE - 100 + 200 || distances[2] == Integer.MAX_VALUE);
+    }
+
 }

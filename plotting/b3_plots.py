@@ -31,7 +31,7 @@ for alg in algs:
     print('Standard Deviation: ',f'{std:.2f}')
 
 
-    ax.plot(alg_data['Run'] - 5, alg_data['Time'] / 1e6, label=alg, linewidth=2)
+    ax.plot(alg_data['Run'] - 5, alg_data['Time'] / 1e6, label=alg, marker='o', linewidth=2)
 
 print('Improvement %: ', f'{((dijkstra_mean / dagp_mean) * 100):.2f}')
 

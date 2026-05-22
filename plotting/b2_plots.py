@@ -22,7 +22,7 @@ for dist in distributions:
     print("Median: ", f'{median:.2f}')
     print("Standard Deviation: ", f'{std:.2f}')
 
-    ax.plot(alg_data['Run'], alg_data['Time'] / 1e6, label=dist, linewidth=2)
+    ax.plot(alg_data['Run'], alg_data['Time'] / 1e6, label=dist, marker='o', linewidth=2)
     ax.axhline(y=mean,linestyle='--',color=ax.lines[-1].get_color(),alpha=0.6,linewidth=1.5)
 
 ax.set_ylabel('Time (ms)')

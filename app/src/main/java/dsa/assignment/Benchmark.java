@@ -11,8 +11,8 @@ import dsa.assignment.service.GraphGenerator;
 public class Benchmark {
     public static void main(String[] args) {
         // firstBenchmark();
-        // secondBenchmark();
-        thirdBenchmark();
+        secondBenchmark();
+        // thirdBenchmark();
     }
 
     private static void firstBenchmark() {

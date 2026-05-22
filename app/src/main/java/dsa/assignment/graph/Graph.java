@@ -3,7 +3,6 @@ package dsa.assignment.graph;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
-import java.util.Stack;
 
 import dsa.assignment.model.Edge;
 import dsa.assignment.model.Node;
@@ -21,6 +19,11 @@ public class Graph {
     private Map<Integer, List<Edge>> adj;
     private Set<Edge> edges;
     Deque<Integer> cachedTopoOrder;
+
+
+    public Map<Integer, List<Edge>> getAdjacencyList() {
+        return adj;
+    }
 
     public Graph() {
         this.vertices = new HashSet<>();
@@ -207,7 +210,7 @@ public class Graph {
     private void dfs(int u, int[] state, Deque<Integer> stack) {
         state[u] = 1;
         for (Edge e : adj.get(u)) {
-            if (state[e.getV()] == 1){System.out.println("ERRORRR");}; // TODO: throw error
+            if (state[e.getV()] == 1) throw new IllegalStateException();
             if (state[e.getV()] == 0) {
                 dfs(e.getV(), state, stack);
             }
