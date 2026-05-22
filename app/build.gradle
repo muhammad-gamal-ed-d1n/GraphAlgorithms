@@ -7,7 +7,9 @@
 
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
+    id 'java'
     id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 repositories {
@@ -35,11 +37,14 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
+    manifest {
+        attributes ('Main-Class': 'dsa.assignment.Benchmark')
+    }
 }
 
 application {
     // Define the main class for the application.
-    mainClass = 'dsa.assignment.App'
+    mainClass = 'dsa.assignment.Benchmark'
 }
 
 tasks.named('test') {
